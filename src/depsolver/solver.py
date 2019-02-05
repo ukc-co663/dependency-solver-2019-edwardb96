@@ -11,13 +11,30 @@ def make_sat_problem(package_list, package_dict, final_state, step_limit):
         partial(matching_packages, package_dict, package_variables)
     if package_list:
         validity_constraint = \
-            make_validity_constraint(package_list,
-                                     package_variables,
-                                     step_limit,
-                                     expand_version_constraint)
-        return validity_constraint
+            make_validity_constraint(
+                package_list,
+                package_variables,
+                step_limit,
+                expand_version_constraint)
+
+        final_state_constraint = \
+            make_final_state_constraint(
+                final_state,
+                partial(expand_version_constraint, step_limit - 1))
+
+        return And(validity_constraint, final_state_constraint)
     else:
         return None
+
+def make_final_state_constraint(final_state, matching):
+    def command_constraint(command):
+        if command.is_install():
+            return disjunction(matching(command.constraint))
+        else:
+            return Not(disjunction(matching(command.constraint)))
+
+    return conjunction(map(command_constraint, final_state))
+
 
 def make_validity_constraint(package_list,
                              package_variables,
@@ -25,7 +42,7 @@ def make_validity_constraint(package_list,
                              expand_version_constraint):
     validity_constraints = [
         package_validity_constraint(package,
-                                    package_variables[time],
+                                    package_variables[time][package.id],
                                     partial(expand_version_constraint, time))
         for package in package_list
         for time in range(step_limit)]
@@ -38,9 +55,8 @@ def var_for_package(package, time):
     return Bool(package_var_name(package, time))
 
 def package_validity_constraint(package,
-                                package_variables,
+                                package_variable,
                                 version_constraint_expander):
-    package_variable = package_variables[package.id]
     make_dependency_constraint = \
         partial(dependency_constraint,
                 package_variable,
@@ -67,7 +83,8 @@ def conflict_constraint(package_variable,
     # TODO This is slightly broken for cases where constraint does not match
     # any package.
     matches = list(matching(conflict))
-    return Not(And(package_variable, disjunction(matches))) if matches else True
+    return Not(And(package_variable, disjunction(matches))) \
+        if matches else True
 
 def dependency_constraint(package_variable,
                           matching,
