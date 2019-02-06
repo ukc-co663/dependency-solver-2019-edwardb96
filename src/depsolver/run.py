@@ -8,7 +8,7 @@ package_dict = repository_to_dictionary(package_list)
 final_state = parse_final_state_constraints("tests/example-0/constraints.json")
 initial_state = parse_initial_state_constraints("tests/example-0/initial.json")
 
-step_limit = 2
+step_limit = 4
 assert step_limit >= 2
 sat_problem = make_sat_problem(package_list,
                                package_dict,

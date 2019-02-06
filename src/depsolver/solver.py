@@ -1,7 +1,8 @@
-from z3 import Bool, Implies, Or, Not, And, PbLe, Xor
+from z3 import Bool, Int, Implies, Or, Not, And, PbLe, If, Xor, Sum
 from repository import Relation, version_string
 from functools import reduce, partial
 from utils import zip_with, adjacent_pairs
+from itertools import chain
 
 def make_sat_problem(package_list,
                      package_dict,
@@ -36,8 +37,8 @@ def make_sat_problem(package_list,
         one_at_a_time_constraint = \
             make_one_change_at_a_time_constraint(package_variables)
 
-        #  cost_objective =
-        #      ()
+        cost_constraint, cost_objective = \
+            make_cost_constraint(package_variables, package_list)
 
         #  minimize cost_objective
 
@@ -45,18 +46,34 @@ def make_sat_problem(package_list,
 
         #  print/write file.
 
-        return one_at_a_time_constraint
+        return cost_constraint
             #    conjunction([validity_constraint,
             #                initial_state_constraint,
-            #                final_state_constraint])
+            #                final_state_constraint,
+            #                one_at_a_time_constraint,
+            #                cost_constraint])
     else:
         return None
 
+def make_cost_constraint(package_variables, package_list):
+    def transition_cost(prev, next, size):
+        return If(prev, If(next, 0, 1000000), If(next, size, 0))
+
+    def state_transition_cost(prev_state, next_state):
+        return zip_with(transition_cost,
+                        prev_state,
+                        next_state,
+                        map(lambda p: p.size, package_list))
+
+    transition_costs = adjacent_pairs(state_transition_cost, package_variables)
+    cost = Int('cost')
+    constraint = (cost == Sum(*reduce(chain, transition_costs)))
+    return (constraint, cost)
+
 def make_one_change_at_a_time_constraint(package_variables):
     def one_at_a_time(prev_state, next_state):
-        return PbLe(tuple(map(lambda xor: (xor, 1),
-                          zip_with(lambda prev, next: Xor(prev, next),
-                              prev_state, next_state))), 1)
+        return PbLe(tuple(zip_with(lambda prev, next: (Xor(prev, next), 1),
+                                   prev_state, next_state)), 1)
 
     return conjunction(adjacent_pairs(one_at_a_time, package_variables))
 
@@ -91,7 +108,7 @@ def make_validity_constraint(package_list,
 
 def var_for_package(package, time):
     def package_var_name(package, time):
-        return "{}_v{}_at_time_{}".format(
+        return "package_{}_v{}_at_time_{}".format(
             package.name, version_string(package.version), time)
     return Bool(package_var_name(package, time))
 

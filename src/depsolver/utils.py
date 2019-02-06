@@ -1,5 +1,5 @@
-def zip_with(f, left, right):
-    return (f(x, y) for (x, y) in zip(left, right))
+def zip_with(f, *args):
+    return (f(*a) for a in zip(*args))
 
 def adjacent_pairs(f, list):
     fst = iter(list)
