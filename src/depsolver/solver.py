@@ -2,13 +2,18 @@ from z3 import Bool, Implies, Or, Not, And
 from repository import Relation, version_string
 from functools import reduce, partial
 
-def make_sat_problem(package_list, package_dict, final_state, step_limit):
+def make_sat_problem(package_list,
+                     package_dict,
+                     initial_state,
+                     final_state,
+                     step_limit):
     package_variables = [
         [var_for_package(package, time) for package in package_list]
         for time in range(step_limit)]
 
     expand_version_constraint = \
         partial(matching_packages, package_dict, package_variables)
+
     if package_list:
         validity_constraint = \
             make_validity_constraint(
@@ -16,6 +21,11 @@ def make_sat_problem(package_list, package_dict, final_state, step_limit):
                 package_variables,
                 step_limit,
                 expand_version_constraint)
+
+        initial_state_constraint = \
+            make_initial_state_constraint(
+                initial_state,
+                partial(equal_package, package_dict, package_variables, 0))
 
         final_state_constraint = \
             make_final_state_constraint(
@@ -35,6 +45,13 @@ def make_final_state_constraint(final_state, matching):
 
     return conjunction(map(command_constraint, final_state))
 
+def make_initial_state_constraint(initial_state, initial_package_var):
+    def installed_package(initial_package):
+        (package_name, version) = initial_package
+        return initial_package_var(package_name, version)
+
+    return conjunction(map(installed_package, initial_state)) \
+        if initial_state else True
 
 def make_validity_constraint(package_list,
                              package_variables,
@@ -98,35 +115,44 @@ def dependency_constraint(package_variable,
     any_of_alternatives = map(alternative_constraint, dependency)
     return Implies(package_variable, disjunction(any_of_alternatives))
 
-def matching_packages(packages_dict, package_install_vars, time, constraint):
+def filter_from_relation(relation, version):
+    if Relation.equal == relation:
+        return lambda pv: pv == version
+    elif Relation.less_than == relation:
+        return lambda pv: pv < version
+    elif Relation.less_than_or_equal == relation:
+        return lambda pv: pv <= version
+    elif Relation.greater_than == relation:
+        return lambda pv: pv > version
+    elif Relation.greater_than_or_equal == relation:
+        return lambda pv: pv >= version
+
+def map_to_var(package_variables, time, list):
+    return map(lambda p: package_variables[time][p.id], list)
+
+def filter_by_version(version_predicate, packages_with_name):
+    return filter(lambda p: version_predicate(p.version),
+                  packages_with_name)
+
+def equal_package(packages_dict,
+                  package_variables,
+                  time,
+                  package_name,
+                  package_version):
+    packages_with_name = packages_dict[package_name]
+    return next(map_to_var(package_variables, time,
+                           filter_by_version(lambda pv: pv == package_version,
+                                             packages_with_name)))
+
+def matching_packages(packages_dict, package_variables, time, constraint):
     packages_with_name = packages_dict[constraint.package_name]
-
-    def map_to_var(list):
-        return map(lambda p: package_install_vars[time][p.id], list)
-
-    def filter_with_name(version_predicate):
-        return filter(
-            lambda p: version_predicate(p.version),
-            packages_with_name)
-
     if constraint.relation is not None:
-        if Relation.equal == constraint.relation:
-            return map_to_var(filter_with_name(
-                              lambda pv: pv == constraint.version))
-        elif Relation.less_than == constraint.relation:
-            return map_to_var(filter_with_name(
-                              lambda pv: pv < constraint.version))
-        elif Relation.less_than_or_equal == constraint.relation:
-            return map_to_var(filter_with_name(
-                              lambda pv: pv <= constraint.version))
-        elif Relation.greater_than == constraint.relation:
-            return map_to_var(filter_with_name(
-                              lambda pv: pv > constraint.version))
-        elif Relation.greater_than_or_equal == constraint.relation:
-            return map_to_var(filter_with_name(
-                              lambda pv: pv >= constraint.version))
+        f = filter_from_relation(constraint.relation, constraint.version)
+        return map_to_var(package_variables,
+                          time,
+                          filter_by_version(f, packages_with_name))
     else:
-        return map_to_var(packages_with_name)
+        return map_to_var(package_variables, time, packages_with_name)
 
 def disjunction(args):
     return reduce(Or, args)

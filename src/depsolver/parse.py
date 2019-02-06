@@ -32,6 +32,10 @@ def parse_final_state_constraints(filename):
     json_list = read_json_file(filename)
     return list(map(parse_command, json_list))
 
+def parse_initial_state_constraints(filename):
+    json_list = read_json_file(filename)
+    return list(map(parse_installed_package, json_list))
+
 def parse_command(string):
     if string[0] == '+':
         return Install(parse_constraint(string[1:]))
@@ -45,6 +49,10 @@ def parse_version(version_string):
 
 def parse_constraints(json_list):
     return list(map(parse_constraint, json_list))
+
+def parse_installed_package(string):
+    package_name, version_string = string.split('=')
+    return (package_name, parse_version(version_string))
 
 def parse_constraint(string):
     i = 0
