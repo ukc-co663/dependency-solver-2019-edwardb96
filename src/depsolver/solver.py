@@ -1,6 +1,7 @@
-from z3 import Bool, Implies, Or, Not, And
+from z3 import Bool, Implies, Or, Not, And, PbLe, Xor
 from repository import Relation, version_string
 from functools import reduce, partial
+from utils import zip_with, adjacent_pairs
 
 def make_sat_problem(package_list,
                      package_dict,
@@ -32,9 +33,32 @@ def make_sat_problem(package_list,
                 final_state,
                 partial(expand_version_constraint, step_limit - 1))
 
-        return And(validity_constraint, final_state_constraint)
+        one_at_a_time_constraint = \
+            make_one_change_at_a_time_constraint(package_variables)
+
+        #  cost_objective =
+        #      ()
+
+        #  minimize cost_objective
+
+        #  run sat and convert satisfying assignment to list of commands.
+
+        #  print/write file.
+
+        return one_at_a_time_constraint
+            #    conjunction([validity_constraint,
+            #                initial_state_constraint,
+            #                final_state_constraint])
     else:
         return None
+
+def make_one_change_at_a_time_constraint(package_variables):
+    def one_at_a_time(prev_state, next_state):
+        return PbLe(tuple(map(lambda xor: (xor, 1),
+                          zip_with(lambda prev, next: Xor(prev, next),
+                              prev_state, next_state))), 1)
+
+    return conjunction(adjacent_pairs(one_at_a_time, package_variables))
 
 def make_final_state_constraint(final_state, matching):
     def command_constraint(command):

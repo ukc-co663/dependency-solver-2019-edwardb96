@@ -1,6 +1,6 @@
 from json import loads
 from repository import Relation, Package, VersionConstraint, Install, Uninstall
-from zip_with import zip_with
+from utils import zip_with
 
 def read_file(filename):
     with open(filename, 'r') as file:
