@@ -7,3 +7,9 @@ def adjacent_pairs(f, list):
     next(snd)
     for s in snd:
         yield f(next(fst), s)
+
+def first_or_none(items):
+    try:
+        return next(items)
+    except StopIteration:
+        return None
