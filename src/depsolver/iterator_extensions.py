@@ -9,7 +9,4 @@ def adjacent_pairs(f, list):
         yield f(next(fst), s)
 
 def first_or_none(items):
-    try:
-        return next(items)
-    except StopIteration:
-        return None
+    return next(items, None)

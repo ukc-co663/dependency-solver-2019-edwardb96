@@ -55,8 +55,12 @@ def dependency_constraint(package_variable,
     def alternative_constraint(alternative):
         # TODO This is broken for cases where constraint does not match
         # any package. If this is the case we should probably error.
-        return disjunction(matching(alternative))
+        alternative_as_list = list(matching(alternative))
+        return disjunction(alternative_as_list) \
+            if alternative_as_list else True
 
-    # TODO This is broken for empty list of alternatives.
-    any_of_alternatives = map(alternative_constraint, dependency)
-    return Implies(package_variable, disjunction(any_of_alternatives))
+
+    #  TODO This is broken for empty list of alternatives.
+    any_of_alternatives = list(map(alternative_constraint, dependency))
+    return Implies(package_variable, disjunction(any_of_alternatives)) \
+        if any_of_alternatives else True

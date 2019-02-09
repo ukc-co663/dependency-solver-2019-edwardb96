@@ -7,44 +7,47 @@ from .cost import make_cost_constraint
 from .invariant import make_one_change_at_a_time_invariant
 from .package_variables import make_package_variables, \
     variable_for_package
+from sys import stderr
 
-def make_propositions_for_problem(package_list, package_dict,
-                                  initial_state, final_state, step_limit):
+def make_propositions_for_problem(package_list, initial_state,
+                                  final_state, step_limit):
     assert package_list
-
+    print("making package variables", file=stderr)
     package_variables = make_package_variables(package_list, step_limit)
+    print("making cost constraint", file=stderr)
     cost_constraint, cost_objective = \
         make_cost_constraint(package_variables, package_list)
-    constraints = [
-        cost_constraint,
-        make_one_change_at_a_time_invariant(package_variables),
+    print("making one change constraint", file=stderr)
+    one_change_constraint = \
+        make_one_change_at_a_time_invariant(package_variables)
+    print("making validity constraint", file=stderr)
+    validity_constraint = \
         make_validity_constraint(
             package_list,
             package_variables,
             step_limit,
-            partial(matching_package_variables,
-                    package_dict,
-                    package_variables)),
+            partial(map_to_var, package_variables))
+    print("making initial state constraint", file=stderr)
+    initial_state_constraint = \
         make_initial_state_constraint(
             package_list,
             initial_state,
-            lambda id: package_variables[0][id]),
+            lambda id: package_variables[0][id])
+    print("making final state constraint", file=stderr)
+    final_state_constraint = \
         make_final_state_constraint(
             final_state,
-            partial(matching_package_variables,
-                    package_dict,
-                    package_variables,
-                    step_limit - 1)),
+            partial(map_to_var, package_variables, step_limit - 1))
+
+    constraints = [
+        cost_constraint,
+        one_change_constraint,
+        validity_constraint,
+        initial_state_constraint,
+        final_state_constraint
     ]
     return (conjunction(constraints), cost_objective, package_variables)
 
-def filter_by_version(version_predicate, packages_with_name):
-    return filter(lambda p: version_predicate(p.version),
-                  packages_with_name)
-
-def matching_package_variables(packages_dict, package_variables,
-                               time, constraint):
-    packages_with_name = packages_dict[constraint.package_name]
-    version_predicate = constraint.as_version_predicate()
+def map_to_var(package_variables, time, constraint):
     return map(partial(variable_for_package, package_variables, time),
-               filter_by_version(version_predicate, packages_with_name))
+               constraint)
