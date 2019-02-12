@@ -7,11 +7,11 @@ from z3 import Bool
 import sys
 
 def make_package_variables(package_list, step_limit):
-    lis = [[str(package.id) + " " + str(time)
-            for package in package_list]
-           for time in range(step_limit)]
-    print(lis)
-    sys.exit(-1)
+    print(len(package_list))
+    print(step_limit)
+    return [[make_variable_for_package(package, time)
+             for package in package_list]
+            for time in range(step_limit)]
 
 def make_variable_for_package(package, time):
     def package_variable_name(package, time):
