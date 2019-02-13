@@ -1,0 +1,7 @@
+[package]
+name = "depsolver"
+version = "0.1.0"
+authors = ["ejb56"]
+edition = "2018"
+
+[dependencies]
