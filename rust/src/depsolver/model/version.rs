@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use std::fmt;
 use std::str::FromStr;
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone)]
 pub struct Version(pub Vec<i32>);
 
 impl fmt::Display for Version {

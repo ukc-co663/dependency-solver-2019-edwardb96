@@ -2,7 +2,6 @@ use super::deserialize_from_str::{DeserializeFromStr};
 use super::version::Version;
 use super::constraint::PackageConstraint;
 use serde::de::{Deserialize, Deserializer};
-use itertools::Itertools;
 use std::fmt;
 use std::str::FromStr;
 use std::marker::PhantomData;
@@ -10,15 +9,15 @@ use std::marker::PhantomData;
 #[derive(Debug, Deserialize)]
 pub struct Package {
     #[serde(default)]
-    pub id : i32,
-    pub name : String,
-    pub version : Version,
-    pub size : u32,
+    pub id: i32,
+    pub name: String,
+    pub version: Version,
+    pub size: u32,
     #[serde(default)]
     #[serde(rename = "depends")]
-    pub dependencies : Vec<Vec<PackageConstraint>>,
+    pub dependencies: Vec<Vec<PackageConstraint>>,
     #[serde(default)]
-    pub conflicts : Vec<PackageConstraint>
+    pub conflicts: Vec<PackageConstraint>
 }
 
 impl fmt::Display for Package {
@@ -29,7 +28,7 @@ impl fmt::Display for Package {
 }
 
 #[derive(Debug)]
-pub struct PackageKey(String, Version);
+pub struct PackageKey(pub String, pub Version);
 
 impl FromStr for PackageKey {
     type Err = String;

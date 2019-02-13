@@ -8,6 +8,7 @@ use std::path::Path;
 mod depsolver;
 
 use depsolver::parse::{parse_repository, parse_constraints, parse_initial_state};
+use depsolver::solve::preprocessing::expand_constraints::expand_constraints_in_problem;
 
 fn main() {
 
@@ -18,10 +19,14 @@ fn main() {
 
     let repo = parse_repository(File::open(repo_path)
                    .expect("repository file does not exist"));
-    let constraint = parse_constraints(File::open(constraints_path)
+    let final_state = parse_constraints(File::open(constraints_path)
                          .expect("constraints file does not exist"));
     let initial = parse_initial_state(File::open(initial_path)
                       .expect("initial file does not exist"));
+    let (expanded_repo, expanded_initial, expanded_final) =
+        expand_constraints_in_problem(repo, initial, final_state);
 
-    println!("{:#?}", &initial);
+    println!("{:#?}", &expanded_repo);
+    println!("{:#?}", &expanded_initial);
+    println!("{:#?}", &expanded_final);
 }

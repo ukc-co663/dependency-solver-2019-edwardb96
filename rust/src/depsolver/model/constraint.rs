@@ -7,14 +7,30 @@ use std::fmt;
 use std::str::FromStr;
 
 #[derive(Debug)]
-pub struct PackageConstraint {
-    pub package_name : String,
-    pub version_constraint : Option<(Relation, Version)>
+pub enum PackageConstraint {
+    Expanded { possibilities: Vec<i32> },
+    Unexpanded { name: String, version_constraint: Option<(Relation, Version)> }
 }
 
 impl PackageConstraint {
-    fn version_fulfils_constraint(&self, package_version : &Version) -> bool {
-        match &self.version_constraint {
+    pub fn version_constraint(&self) -> &Option<(Relation, Version)> {
+        match &self {
+            PackageConstraint::Unexpanded { name: _, version_constraint } =>
+                version_constraint,
+            _ => panic!("attempted to get version constraint from expanded package constraint.")
+        }
+    }
+
+    pub fn name(&self) -> &String {
+        match &self {
+            PackageConstraint::Unexpanded { name, version_constraint: _ } =>
+                name,
+            _ => panic!("attempted to get version constraint from expanded package constraint.")
+        }
+    }
+
+    pub fn version_fulfils_constraint(&self, package_version: &Version) -> bool {
+        match &self.version_constraint() {
             None                                          => true,
             Some((Relation::Equal, version))              => *package_version == *version,
             Some((Relation::LessThan, version))           => *package_version < *version,
@@ -27,9 +43,9 @@ impl PackageConstraint {
 
 impl fmt::Display for PackageConstraint {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match &self.version_constraint {
-            None                      => write!(f, "{}", self.package_name),
-            Some((relation, version)) => write!(f, "{}{}{}", self.package_name, relation, &version)
+        match self.version_constraint() {
+            None                      => write!(f, "{}", self.name()),
+            Some((relation, version)) => write!(f, "{}{}{}", self.name(), relation, &version)
         }
     }
 }
@@ -58,8 +74,8 @@ impl FromStr for PackageConstraint {
             Some((inequality, version))
         };
 
-        Ok(PackageConstraint{
-            package_name: package_name,
+        Ok(PackageConstraint::Unexpanded {
+            name: package_name,
             version_constraint: constraint
         })
     }
