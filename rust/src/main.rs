@@ -7,7 +7,7 @@ use std::fs::File;
 use std::path::Path;
 mod depsolver;
 
-use depsolver::parse::{parse_repository, parse_constraints};
+use depsolver::parse::{parse_repository, parse_constraints, parse_initial_state};
 
 fn main() {
 
@@ -16,16 +16,12 @@ fn main() {
     let initial_path = Path::new(&args[2]);
     let constraints_path = Path::new(&args[3]);
 
-    let repo = {
-        let mut res = parse_repository(File::open(repo_path).expect("repository file does not exist"));
-        for i in 0..res.len() {
-            res[i].id = i as i32;
-        }
-        res
-    };
+    let repo = parse_repository(File::open(repo_path)
+                   .expect("repository file does not exist"));
+    let constraint = parse_constraints(File::open(constraints_path)
+                         .expect("constraints file does not exist"));
+    let initial = parse_initial_state(File::open(initial_path)
+                      .expect("initial file does not exist"));
 
-    let constr = parse_constraints(File::open(constraints_path).expect("constraints file does not exist"));
-
-    println!("{:#?}", repo);
-    println!("{:#?}", constr);
+    println!("{:#?}", &initial);
 }
