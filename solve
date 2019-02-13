@@ -1,2 +1,3 @@
 #!/bin/bash
-python3 src/depsolver/python/run.py "$@"
+# python3 python/run.py "$@"
+./rust/target/release/depsolver "$@"
