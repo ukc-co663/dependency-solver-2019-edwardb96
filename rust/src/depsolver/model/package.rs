@@ -6,10 +6,10 @@ use std::fmt;
 use std::str::FromStr;
 use std::marker::PhantomData;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Package {
     #[serde(default)]
-    pub id: i32,
+    pub id: usize,
     pub name: String,
     pub version: Version,
     pub size: u32,

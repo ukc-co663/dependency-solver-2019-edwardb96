@@ -6,9 +6,9 @@ use std::marker::PhantomData;
 use std::fmt;
 use std::str::FromStr;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum PackageConstraint {
-    Expanded { possibilities: Vec<i32> },
+    Expanded { possibilities: Vec<usize> },
     Unexpanded { name: String, version_constraint: Option<(Relation, Version)> }
 }
 
@@ -26,6 +26,20 @@ impl PackageConstraint {
             PackageConstraint::Unexpanded { name, version_constraint: _ } =>
                 name,
             _ => panic!("attempted to get version constraint from expanded package constraint.")
+        }
+    }
+
+    pub fn possibilities(&self) -> &Vec<usize> {
+        match &self {
+            PackageConstraint::Expanded { possibilities } => possibilities,
+            _ => panic!("attempted to get possibilies from unexpanded package constraint.")
+        }
+    }
+
+    pub fn possibilities_mut(&mut self) -> &mut Vec<usize> {
+        match *self {
+            PackageConstraint::Expanded { ref mut possibilities } => possibilities,
+            _ => panic!("attempted to get possibilies from unexpanded package constraint.")
         }
     }
 
@@ -88,7 +102,7 @@ impl<'de> Deserialize<'de> for PackageConstraint {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Relation {
     LessThan,
     GreaterThan,

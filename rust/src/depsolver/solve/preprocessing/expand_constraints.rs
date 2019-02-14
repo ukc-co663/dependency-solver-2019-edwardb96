@@ -15,14 +15,12 @@ type NamePackageIndex<'a> = HashMap<String, Vec<&'a Package>>;
 pub fn expand_constraints_in_problem(packages: Vec<Package>,
                                      initial: Vec<PackageKey>,
                                      final_state: Vec<Command>)
-    -> (Vec<Package>, HashSet<i32>, Vec<Command>) {
+    -> (Vec<Package>, HashSet<usize>, Vec<Command>) {
     let index = name_to_packages_index(&packages);
     let expanded_package_list = expand_all_constraints(&packages, &index);
     let expanded_initial_state = expand_initial_state(&initial, &index);
-    let expanded_final_state = expand_final_state(final_state, &index);
-    (expanded_package_list,
-     expanded_initial_state,
-     expanded_final_state)
+    let expanded_final_state = expand_final_state(&final_state, &index);
+    (expanded_package_list, expanded_initial_state, expanded_final_state)
 }
 
 fn name_to_packages_index<'a>(package_list: &'a Vec<Package>)
@@ -57,8 +55,8 @@ fn expand_all_constraints(packages: &Vec<Package>, index: &NamePackageIndex) -> 
 
 fn expand_initial_state<'a>(initial_state: &Vec<PackageKey>,
                             index: &NamePackageIndex<'a>)
-    -> HashSet<i32> {
-    fn expand_specific_package(index : &NamePackageIndex, package_key : &PackageKey) -> i32 {
+    -> HashSet<usize> {
+    fn expand_specific_package(index : &NamePackageIndex, package_key : &PackageKey) -> usize {
         let PackageKey(name, version) = package_key;
         let packages_with_name = &index[name];
         packages_with_name.iter()
@@ -71,13 +69,13 @@ fn expand_initial_state<'a>(initial_state: &Vec<PackageKey>,
                                            .map(|pk| expand_specific_package(index, pk)))
 }
 
-fn expand_final_state(final_state: Vec<Command>, index : &NamePackageIndex) -> Vec<Command> {
+fn expand_final_state(final_state: &Vec<Command>, index : &NamePackageIndex) -> Vec<Command> {
     fn expand_command(command: &Command, index: &NamePackageIndex) -> Command {
         match command {
             Command::Install(constraint) =>
-                Command::Install(expand_constraint(&constraint, index)),
+                Command::Install(expand_constraint(constraint, index)),
             Command::Uninstall(constraint) =>
-                Command::Uninstall(expand_constraint(&constraint, index))
+                Command::Uninstall(expand_constraint(constraint, index))
         }
     }
 
@@ -88,13 +86,16 @@ fn expand_final_state(final_state: Vec<Command>, index : &NamePackageIndex) -> V
 
 fn expand_constraint(constraint: &PackageConstraint, index: &NamePackageIndex)
     -> PackageConstraint {
-    match &constraint {
+    match constraint {
         PackageConstraint::Unexpanded { name, version_constraint: _ } =>
             PackageConstraint::Expanded {
-                possibilities: index[name].iter()
-                                          .filter(|p| constraint.version_fulfils_constraint(&p.version))
-                                          .map(|p| p.id)
-                                          .collect()
+                possibilities: match index.get(name) {
+                    Some(ps) => ps.iter()
+                                  .filter(|p| constraint.version_fulfils_constraint(&p.version))
+                                  .map(|p| p.id)
+                                  .collect(),
+                    None => vec![]
+                }
             },
         _ => panic!("Attempted to expand constraint when already expanded.")
     }
