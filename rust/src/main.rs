@@ -8,7 +8,7 @@ use std::path::Path;
 mod depsolver;
 
 use depsolver::parse::parse_problem;
-use depsolver::solve::solve;
+use depsolver::solver::solve;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -20,7 +20,7 @@ fn main() {
         parse_problem(File::open(repo_path).expect("repository file does not exist"),
                       File::open(initial_path).expect("initial file does not exist"),
                       File::open(constraints_path).expect("constraints file does not exist"));
-                      
+
     let commands = solve(repo, initial, final_state);
 
     println!("{:#?}", &commands);

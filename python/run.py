@@ -10,8 +10,6 @@ _, repository_file, initial_file, constraints_file = argv
 
 print("parsing...", file=stderr)
 package_list = parse_repository(repository_file)
-print("converting to dictionary...", file=stderr)
-
 initial_state = parse_initial_state_constraints(initial_file)
 final_state = parse_final_state_constraints(constraints_file)
 

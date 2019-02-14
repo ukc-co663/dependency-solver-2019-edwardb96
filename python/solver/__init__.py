@@ -4,9 +4,9 @@ from .preprocessing.expand_constraints import expand_constraints_in_problem
 from .preprocessing.shrink_repository import shrink_problem
 
 from z3 import Solver, Optimize, sat, unknown
-from sys import stderr
+from sys import stderr, exit
 
-def solve(opt, repository_package_list, initial_state, final_state):
+def solve(repository_package_list, initial_state, final_state):
     expanded_package_list, expanded_initial_state, expanded_final_state = \
         expand_constraints_in_problem(repository_package_list,
                                       initial_state,
@@ -22,6 +22,7 @@ def solve(opt, repository_package_list, initial_state, final_state):
     reduced_by = int(((original_size - new_size) / original_size) * 100)
     print("reduced size by {}%".format(reduced_by), file=stderr)
 
+    exit(-1)
     opt = Optimize()
     step_limit = 30
     print("making propositions", file=stderr)
