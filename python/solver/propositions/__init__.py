@@ -24,19 +24,18 @@ def make_propositions_for_problem(opt, package_list, initial_state,
         make_validity_constraint(
             package_list,
             package_variables,
-            step_limit,
-            partial(map_to_var, package_variables))
+            step_limit)
     print("making initial state constraint", file=stderr)
     initial_state_constraint = \
         make_initial_state_constraint(
             package_list,
             initial_state,
-            lambda id: package_variables[0][id])
+            package_variables[0])
     print("making final state constraint", file=stderr)
     final_state_constraint = \
         make_final_state_constraint(
             final_state,
-            partial(map_to_var, package_variables, step_limit - 1))
+            package_variables[step_limit - 1])
 
     constraints = [
         one_change_constraint,
@@ -45,7 +44,3 @@ def make_propositions_for_problem(opt, package_list, initial_state,
         final_state_constraint
     ]
     return (conjunction(constraints), package_variables)
-
-def map_to_var(package_variables, time, constraint):
-    return map(partial(variable_for_package, package_variables, time),
-               constraint)

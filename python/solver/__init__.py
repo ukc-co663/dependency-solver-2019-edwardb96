@@ -3,8 +3,8 @@ from .postprocessor import postprocess
 from .preprocessing.expand_constraints import expand_constraints_in_problem
 from .preprocessing.shrink_repository import shrink_problem
 
-from z3 import Solver, Optimize, sat, unknown
-from sys import stderr, exit
+from z3 import Optimize, sat, unknown
+from sys import stderr
 
 def solve(repository_package_list, initial_state, final_state):
     expanded_package_list, expanded_initial_state, expanded_final_state = \
@@ -22,9 +22,8 @@ def solve(repository_package_list, initial_state, final_state):
     reduced_by = int(((original_size - new_size) / original_size) * 100)
     print("reduced size by {}%".format(reduced_by), file=stderr)
 
-    exit(-1)
     opt = Optimize()
-    step_limit = 30
+    step_limit = new_size * 2
     print("making propositions", file=stderr)
     constraints, package_variables = \
         make_propositions_for_problem(opt, shrunk_package_list,
@@ -32,10 +31,8 @@ def solve(repository_package_list, initial_state, final_state):
                                       shrunk_final_state,
                                       step_limit)
 
-    #print(constraints.sexpr(), file=stderr)
     print("running sat solver...", file=stderr)
     opt.add(constraints)
-    #opt.minimize(cost)
     result = opt.check()
     if result == sat:
         print("postprocessing...")

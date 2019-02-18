@@ -7,8 +7,6 @@ from z3 import Bool
 import sys
 
 def make_package_variables(package_list, step_limit):
-    print(len(package_list))
-    print(step_limit)
     return [[make_variable_for_package(package, time)
              for package in package_list]
             for time in range(step_limit)]
