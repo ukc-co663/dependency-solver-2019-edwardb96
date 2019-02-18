@@ -1,22 +1,30 @@
+use crate::depsolver::model::command::Command;
 use crate::depsolver::model::package::Package;
-use crate::depsolver::model::package::PackageKey;
+use crate::depsolver::model::constraint::{PackageConstraint, Relation};
 use z3::{Model, Ast};
 
 pub fn extract_commands(package_variables: &Vec<Vec<Ast>>,
                         packages: &Vec<Package>,
-                        solution: &Model) -> Vec<PackageKey> {
+                        solution: &Model) -> Vec<Command> {
+                            
     fn diff_states(solution: &Model,
                    packages: &Vec<Package>,
                    prev_state: &Vec<Ast>,
-                   next_state: &Vec<Ast>) -> Option<PackageKey> {
+                   next_state: &Vec<Ast>) -> Option<Command> {
         assert!(!packages.is_empty());
         izip!(packages, prev_state, next_state).map(|(package, prev, next)| {
             let (prev_bool, next_bool) = (solution.eval(prev).unwrap().as_bool().unwrap(),
                                           solution.eval(next).unwrap().as_bool().unwrap());
             match (prev_bool, next_bool) {
                 (true, true) | (false, false) => None,
-                (true, false) => Some(PackageKey(package.name.clone(), package.version.clone())),
-                (false, true) => Some(PackageKey(package.name.clone(), package.version.clone()))
+                (true, false) => Some(Command::Uninstall(
+                    PackageConstraint::Unexpanded {
+                        name: package.name.clone(),
+                        version_constraint: Some((Relation::Equal, package.version.clone())) } )),
+                (false, true) => Some(Command::Install(
+                    PackageConstraint::Unexpanded {
+                        name: package.name.clone(),
+                        version_constraint: Some((Relation::Equal, package.version.clone())) }))
             }
         }).flatten().next()
     }

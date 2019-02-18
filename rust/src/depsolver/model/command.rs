@@ -1,3 +1,5 @@
+use serde::Serializer;
+use serde::Serialize;
 use super::constraint::PackageConstraint;
 use super::deserialize_from_str::DeserializeFromStr;
 use serde::de::{Deserialize, Deserializer};
@@ -37,7 +39,14 @@ impl FromStr for Command {
 
 impl<'de> Deserialize<'de> for Command {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where D : Deserializer<'de> {
+        where D : Deserializer<'de> {
         deserializer.deserialize_any(DeserializeFromStr(PhantomData))
+    }
+}
+
+impl Serialize for Command {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S : Serializer {
+        serializer.serialize_str(&self.to_string())
     }
 }

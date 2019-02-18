@@ -12,7 +12,7 @@ pub struct Package {
     pub id: usize,
     pub name: String,
     pub version: Version,
-    pub size: u64,
+    pub size: u32,
     #[serde(default)]
     #[serde(rename = "depends")]
     pub dependencies: Vec<Vec<PackageConstraint>>,

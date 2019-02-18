@@ -21,7 +21,7 @@ fn package_validity_constraint<'ctx>(package: &Package,
                                      package_variable: &Ast<'ctx>,
                                      state: &Vec<Ast<'ctx>>) -> Option<Ast<'ctx>> {
 
-    let all_dependencies_installed: Option<Ast> =
+    let all_dependencies_installed: Option<Ast> = None;
         package.dependencies.iter()
                             .filter_map(|dep| dependency_constraint(package_variable, dep, state))
                             .conjunction();
@@ -58,12 +58,14 @@ fn conflict_constraint<'ctx>(package_variable: &Ast<'ctx>,
                              state: &Vec<Ast<'ctx>>) -> Option<Ast<'ctx>> {
     let possibilities = constraint.possibilities();
     if !possibilities.is_empty() {
-        possibilities.iter()
-                     .map(|&package_id| state[package_id].clone())
-                     .disjunction()
-                     .map(|any_conflicts_installed| {
-                          package_variable.not().and(&[&any_conflicts_installed])
-                     })
+        let any_conflicts_installed =
+            possibilities.iter()
+                         .map(|&package_id| state[package_id].clone())
+                         .disjunction();
+
+        any_conflicts_installed.map(|conflicts_installed| {
+            package_variable.and(&[&conflicts_installed]).not()
+        })
     } else {
         None
     }

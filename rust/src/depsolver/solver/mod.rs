@@ -15,7 +15,7 @@ use postprocessing::extract_commands::extract_commands;
 
 pub fn solve(repo: Vec<Package>,
              initial_state: Vec<PackageKey>,
-             final_state: Vec<Command>) -> Option<Vec<PackageKey>> {
+             final_state: Vec<Command>) -> Option<Vec<Command>> {
     eprintln!("expanding constriants");
     let (expanded_repo, expanded_initial, expanded_final) =
         expand_constraints_in_problem(repo, initial_state, final_state);
@@ -31,7 +31,7 @@ pub fn solve(repo: Vec<Package>,
     //println!("{:#?}", &shrunk_repo);
     //println!("{:#?}", &shrunk_initial_state);
     //println!("{:#?}", &shrunk_final);
-    let step_limit = shrunk_repo.len();
+    let step_limit = shrunk_repo.len() * 2;
     let cfg = Config::new();
     let ctx = Context::new(&cfg);
 
@@ -47,6 +47,8 @@ pub fn solve(repo: Vec<Package>,
         eprintln!("adding const optimization constraint");
         add_cost_constraint(&opt, &package_variables, &shrunk_repo);
 
+        eprintln!("{}", &opt);
+        
         eprintln!("running smt solver");
         if opt.check() {
             let model = opt.get_model();
@@ -54,6 +56,7 @@ pub fn solve(repo: Vec<Package>,
             let commands = extract_commands(&package_variables, &shrunk_repo, &model);
             Some(commands)
         } else {
+            eprintln!("Check returned false");
             None
         }
     })

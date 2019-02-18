@@ -12,6 +12,7 @@ mod depsolver;
 
 use depsolver::parse::parse_problem;
 use depsolver::solver::solve;
+use depsolver::serialize::serialize_commands;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -24,8 +25,6 @@ fn main() {
                       File::open(initial_path).expect("initial file does not exist"),
                       File::open(constraints_path).expect("constraints file does not exist"));
 
-    let commands = solve(repo, initial, final_state);
-
-    println!("{:#?}", &commands);
-
+    let commands = solve(repo, initial, final_state).expect("Problem unsatisfiable");
+    serialize_commands(&commands);
 }

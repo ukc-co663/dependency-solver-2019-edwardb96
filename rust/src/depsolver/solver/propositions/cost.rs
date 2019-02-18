@@ -1,7 +1,7 @@
 use crate::depsolver::model::package::Package;
 use z3::{Optimize, Ast};
 
-const UNINSTALL_COST : u64 = 1000000;
+const UNINSTALL_COST : i64 = -1000000;
 
 pub fn add_cost_constraint(opt : &Optimize,
                            package_variables: &Vec<Vec<Ast>>,
@@ -17,8 +17,9 @@ pub fn add_cost_constraint(opt : &Optimize,
         }
     }
 
-    fn add_transition_cost(opt: &Optimize, prev: &Ast, next: &Ast, size: u64) {
-        opt.add_soft(&prev.not().and(&[next]), size);
+    fn add_transition_cost(opt: &Optimize, prev: &Ast, next: &Ast, size: u32) {
+        let weight : i64 = -(size as i64);
+        opt.add_soft(&prev.not().and(&[next]), weight);
         opt.add_soft(&prev.and(&[&next.not()]), UNINSTALL_COST);
     }
 
