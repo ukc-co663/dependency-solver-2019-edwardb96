@@ -3,7 +3,7 @@ from .postprocessor import postprocess
 from .preprocessing.expand_constraints import expand_constraints_in_problem
 from .preprocessing.shrink_repository import shrink_problem
 
-from z3 import Optimize, sat, unknown
+from z3 import Optimize, sat, unknown, Z3Exception
 from sys import stderr
 
 def solve(repository_package_list, initial_state, final_state):
@@ -23,6 +23,7 @@ def solve(repository_package_list, initial_state, final_state):
     print("reduced size by {}%".format(reduced_by), file=stderr)
 
     opt = Optimize()
+    opt.set('solution_prefix', 'almost_done')
     step_limit = new_size * 2
     print("making propositions", file=stderr)
     constraints, package_variables = \
@@ -31,8 +32,10 @@ def solve(repository_package_list, initial_state, final_state):
                                       shrunk_final_state,
                                       step_limit)
 
+    print("setting timeout")
+    opt.set('timeout', 60 * 1000)
+
     print("running sat solver...", file=stderr)
-    opt.add(constraints)
     result = opt.check()
     if result == sat:
         print("postprocessing...")
@@ -42,7 +45,16 @@ def solve(repository_package_list, initial_state, final_state):
                            shrunk_package_list,
                            step_limit)
     elif result == unknown:
-        print("Unknown - timeout?")
-        return None
+        try:
+            solution = opt.model()
+            print("sub optimal solution available", file=stderr)
+            return postprocess(solution,
+                               package_variables,
+                               shrunk_package_list,
+                               step_limit)
+        except Z3Exception:
+            print("sub optimal solution unavailable aborting", file=stderr)
+            return None
     else:
+        print("constraints unsatisfiable aborting", file=stderr)
         return None

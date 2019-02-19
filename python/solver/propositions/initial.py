@@ -17,7 +17,5 @@ def make_initial_state_constraint(package_list,
         else:
             return Not(package_variables[package.id])
 
-    print(initial_state)
-
     assert package_list, "No packages in the repository."
     return conjunction(map(install_state_constraint, package_list))

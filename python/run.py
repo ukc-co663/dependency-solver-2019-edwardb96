@@ -17,5 +17,3 @@ print("solving...", file=stderr)
 solution = solve(package_list, initial_state, final_state)
 if solution:
     serialize_solution(solution)
-else:
-    print("No solution?", file=stderr)
