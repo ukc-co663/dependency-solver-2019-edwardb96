@@ -48,8 +48,6 @@ pub fn solve(repo: Vec<Package>,
         add_cost_constraint(&opt, &package_variables, &shrunk_repo);
         opt.set_timeout(60 * 1000);
 
-        eprintln!("{}", &opt);
-
         eprintln!("running smt solver");
         //match opt.check() {
         //    SatResult::Sat =>
