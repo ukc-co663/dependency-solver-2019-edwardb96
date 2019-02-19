@@ -44,12 +44,18 @@ pub fn solve(repo: Vec<Package>,
         let opt = Optimize::new(&ctx);
         eprintln!("sending constraints to z3");
         opt.assert(&constraints);
-        eprintln!("adding const optimization constraint");
+        eprintln!("adding cost optimization constraint");
         add_cost_constraint(&opt, &package_variables, &shrunk_repo);
+        opt.set_timeout(60 * 1000);
 
         eprintln!("{}", &opt);
-        
+
         eprintln!("running smt solver");
+        //match opt.check() {
+        //    SatResult::Sat =>
+        //    SatResult::Unknown =>
+        //    SatResult::UnSat =>
+        //}
         if opt.check() {
             let model = opt.get_model();
             eprintln!("constructing solution from satisfying assignment");

@@ -23,7 +23,6 @@ def solve(repository_package_list, initial_state, final_state):
     print("reduced size by {}%".format(reduced_by), file=stderr)
 
     opt = Optimize()
-    opt.set('solution_prefix', 'almost_done')
     step_limit = new_size * 2
     print("making propositions", file=stderr)
     constraints, package_variables = \
@@ -32,6 +31,7 @@ def solve(repository_package_list, initial_state, final_state):
                                       shrunk_final_state,
                                       step_limit)
 
+    opt.add(constraints)
     print("setting timeout")
     opt.set('timeout', 60 * 1000)
 

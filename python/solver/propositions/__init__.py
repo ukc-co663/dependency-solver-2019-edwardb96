@@ -36,7 +36,6 @@ def make_propositions_for_problem(opt, package_list, initial_state,
         make_final_state_constraint(
             final_state,
             package_variables[step_limit - 1])
-
     constraints = [
         one_change_constraint,
         validity_constraint,

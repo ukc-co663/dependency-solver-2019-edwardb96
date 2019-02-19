@@ -15,5 +15,7 @@ final_state = parse_final_state_constraints(constraints_file)
 
 print("solving...", file=stderr)
 solution = solve(package_list, initial_state, final_state)
-if solution:
+if solution is not None:
     serialize_solution(solution)
+else:
+    print("solver returned none")
