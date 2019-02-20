@@ -10,7 +10,7 @@ pub fn make_validity_constraint<'ctx>(packages: &Vec<Package>,
                          packages.iter()
                                  .zip(state.iter())
                                  .filter_map(move |(package, package_var)| {
-                                     package_validity_constraint(package, package_var, &state)
+                                    package_validity_constraint(package, package_var, &state)
                                  })
                      })
                      .flatten()
@@ -21,7 +21,7 @@ fn package_validity_constraint<'ctx>(package: &Package,
                                      package_variable: &Ast<'ctx>,
                                      state: &Vec<Ast<'ctx>>) -> Option<Ast<'ctx>> {
 
-    let all_dependencies_installed: Option<Ast> = None;
+    let all_dependencies_installed: Option<Ast> =
         package.dependencies.iter()
                             .filter_map(|dep| dependency_constraint(package_variable, dep, state))
                             .conjunction();

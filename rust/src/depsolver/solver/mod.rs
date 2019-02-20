@@ -1,6 +1,6 @@
 use crate::depsolver::model::command::Command;
 use crate::depsolver::model::package::{Package, PackageKey};
-use z3::{Config, Context, Optimize};
+use z3::{Config, Context, Optimize, CheckResult};
 
 mod preprocessing;
 use preprocessing::expand_constraints::expand_constraints_in_problem;
@@ -31,9 +31,14 @@ pub fn solve(repo: Vec<Package>,
     //println!("{:#?}", &shrunk_repo);
     //println!("{:#?}", &shrunk_initial_state);
     //println!("{:#?}", &shrunk_final);
-    let step_limit = shrunk_repo.len() * 2;
+    let mut step_limit = shrunk_repo.len() * 2;
+    if step_limit > 100 {
+        step_limit = 100;
+    }
     let cfg = Config::new();
     let ctx = Context::new(&cfg);
+    let opt = Optimize::new(&ctx);
+    opt.set_timeout(4 * 60 * 1000);
 
     eprintln!("begin making constraints");
     let (package_variables, all_constraints) = make_propositions_for_problem(
@@ -41,27 +46,25 @@ pub fn solve(repo: Vec<Package>,
     eprintln!("end making constraints");
 
     all_constraints.map_or(Some(vec![]), |constraints| {
-        let opt = Optimize::new(&ctx);
         eprintln!("sending constraints to z3");
         opt.assert(&constraints);
         eprintln!("adding cost optimization constraint");
         add_cost_constraint(&opt, &package_variables, &shrunk_repo);
-        opt.set_timeout(60 * 1000);
 
         eprintln!("running smt solver");
-        //match opt.check() {
-        //    SatResult::Sat =>
-        //    SatResult::Unknown =>
-        //    SatResult::UnSat =>
-        //}
-        if opt.check() {
-            let model = opt.get_model();
-            eprintln!("constructing solution from satisfying assignment");
-            let commands = extract_commands(&package_variables, &shrunk_repo, &model);
-            Some(commands)
-        } else {
-            eprintln!("Check returned false");
-            None
+        //println!("{}", opt);
+        match opt.check_get_model() {
+            CheckResult::Satisfiable(model) => {
+                eprintln!("constructing solution from optimal satisfying assignment");
+                let commands = extract_commands(&package_variables, &shrunk_repo, &model);
+                Some(commands)
+            },
+            CheckResult::Unknown(model) => {
+                eprintln!("constructing solution from sub-optimal satisfying assignment");
+                let commands = extract_commands(&package_variables, &shrunk_repo, &model);
+                Some(commands)
+            },
+            CheckResult::Unsatisfiable => None,
         }
     })
 }

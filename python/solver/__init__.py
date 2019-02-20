@@ -33,8 +33,10 @@ def solve(repository_package_list, initial_state, final_state):
 
     opt.add(constraints)
     print("setting timeout")
-    opt.set('timeout', 60 * 1000)
+    opt.set('timeout', 60 * 5 * 1000)
 
+    print(opt)
+    return None
     print("running sat solver...", file=stderr)
     result = opt.check()
     if result == sat:
