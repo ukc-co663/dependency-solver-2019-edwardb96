@@ -25,23 +25,23 @@ pub fn make_propositions_for_problem<'ctx>(ctx: &'ctx z3::Context,
                                            step_limit: usize)
     -> (Vec<Vec<Ast<'ctx>>>, Option<Ast<'ctx>>) {
 
-    //  eprintln!("making package variables");
+    eprintln!("making package variables");
     let package_variables = make_package_variables(ctx, packages.len(), step_limit);
-    //eprintln!("making one change at a time constraint");
+    eprintln!("making one change at a time constraint");
     let one_at_a_time = make_one_change_at_a_time_invariant(&package_variables);
 
 
-    //eprintln!("making validity constraint");
+    eprintln!("making validity constraint");
     let validity_constraint = make_validity_constraint(&packages, &package_variables);
 
-    //eprintln!("making initial constraint");
+    eprintln!("making initial constraint");
     let initial_constraint = make_initial_state_constraint(&initial_state,
                                                            &package_variables[0],
                                                            &packages);
-    //eprintln!("making final state constraint");
+    eprintln!("making final state constraint");
     let final_state_constraint = make_final_state_constraint(&final_state,
                                                              &package_variables[step_limit-1]);
-    //eprintln!("combining constraints");
+    eprintln!("combining constraints");
     let combined_constraint = vec![
         one_at_a_time,
         validity_constraint,
