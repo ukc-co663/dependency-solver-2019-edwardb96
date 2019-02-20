@@ -10,7 +10,7 @@ use self::preprocessing::expand_constraints::expand_constraints_in_problem;
 use self::preprocessing::shrink_repository::shrink_problem;
 
 use self::propositions::make_propositions_for_problem;
-use self::propositions::cost::add_cost_constraint;
+use self::propositions::cost::make_cost_constraint;
 use self::postprocessing::extract_commands::extract_commands;
 
 pub fn solve(repo: Vec<Package>,
@@ -45,12 +45,15 @@ pub fn solve(repo: Vec<Package>,
     eprintln!("end making constraints");
 
     all_constraints.map_or(Some(vec![]), |constraints| {
-        eprintln!("sending constraints to z3");
+        eprintln!("sending problem constraints to z3");
         opt.assert(&constraints);
         eprintln!("adding cost optimization constraint");
-        add_cost_constraint(&opt, &package_variables, &shrunk_repo);
+        let (cost_variable, cost_constraint) =
+            make_cost_constraint(&ctx, &package_variables, &shrunk_repo);
+        opt.assert(&cost_constraint);
 
         eprintln!("running smt solver");
+        opt.minimize(&cost_variable);
         //println!("{}", opt);
         match opt.check_get_model() {
             CheckResult::Satisfiable(model) => {
