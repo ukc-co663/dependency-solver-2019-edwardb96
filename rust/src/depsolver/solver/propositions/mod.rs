@@ -4,18 +4,18 @@ use z3::Ast;
 use std::collections::HashSet;
 
 mod utils;
-use utils::ConditionIterator;
+use self::utils::ConditionIterator;
 pub mod cost;
 mod package_variables;
-use package_variables::make_package_variables;
+use self::package_variables::make_package_variables;
 mod invariant;
-use invariant::make_one_change_at_a_time_invariant;
+use self::invariant::make_one_change_at_a_time_invariant;
 mod validity;
-use validity::make_validity_constraint;
+use self::validity::make_validity_constraint;
 mod initial;
-use initial::make_initial_state_constraint;
+use self::initial::make_initial_state_constraint;
 mod final_state;
-use final_state::make_final_state_constraint;
+use self::final_state::make_final_state_constraint;
 
 
 pub fn make_propositions_for_problem<'ctx>(ctx: &'ctx z3::Context,

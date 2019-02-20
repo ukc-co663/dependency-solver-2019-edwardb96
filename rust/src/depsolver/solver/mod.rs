@@ -1,17 +1,17 @@
+mod preprocessing;
+mod propositions;
+mod postprocessing;
+
 use crate::depsolver::model::command::Command;
 use crate::depsolver::model::package::{Package, PackageKey};
 use z3::{Config, Context, Optimize, CheckResult};
 
-mod preprocessing;
-use preprocessing::expand_constraints::expand_constraints_in_problem;
-use preprocessing::shrink_repository::shrink_problem;
+use self::preprocessing::expand_constraints::expand_constraints_in_problem;
+use self::preprocessing::shrink_repository::shrink_problem;
 
-mod propositions;
-use propositions::make_propositions_for_problem;
-use propositions::cost::add_cost_constraint;
-
-mod postprocessing;
-use postprocessing::extract_commands::extract_commands;
+use self::propositions::make_propositions_for_problem;
+use self::propositions::cost::add_cost_constraint;
+use self::postprocessing::extract_commands::extract_commands;
 
 pub fn solve(repo: Vec<Package>,
              initial_state: Vec<PackageKey>,
