@@ -1,21 +1,28 @@
-use z3::Ast;
-use super::utils::ConditionIterator;
+use z3::{Ast, Context};
+use super::utils::{ConditionIterator, SummableIterator};
 
-pub fn make_one_change_at_a_time_invariant<'ctx>(package_variables: &Vec<Vec<Ast<'ctx>>>)
+pub fn make_one_change_at_a_time_invariant<'ctx>(ctx: &'ctx Context,
+                                                 package_variables: &Vec<Vec<Ast<'ctx>>>)
     -> Option<Ast<'ctx>> {
 
-    fn one_at_a_time<'ctx>(prev_state: &Vec<Ast<'ctx>>, next_state: &Vec<Ast<'ctx>>) -> Option<Ast<'ctx>> {
-        assert_eq!(prev_state.len(), next_state.len());
-        let xors: Vec<Ast> = izip!(prev_state, next_state).map(|(prev, next)| prev.xor(next)).collect();
-        let mut xor_refs: Vec<&Ast> = xors.iter().collect();
-        xor_refs.pop().map(|xor| xor.at_most(&xor_refs[..], 1))
+    fn only_one_change<'ctx>(ctx: &'ctx Context,
+                                   prev_state: &Vec<Ast<'ctx>>,
+                                   next_state: &Vec<Ast<'ctx>>) -> Ast<'ctx> {
+        izip!(prev_state, next_state).map(|(prev, next)| {
+            is_transition_int(ctx, prev, next)
+        }).total().unwrap().le(&ctx.from_i64(1))
     }
 
-    package_variables.windows(2)
-                     .filter_map(|w| match w {
-                         [prev_state, next_state] => one_at_a_time(&prev_state, &next_state),
-                         _ => panic!("window of wrong size")
-                     })
-                     .conjunction()
+    fn is_transition_int<'ctx>(ctx: &'ctx Context,
+                             prev: &Ast<'ctx>,
+                             next: &Ast<'ctx>) -> Ast<'ctx> {
+        let is_change = prev.xor(&next);
+        is_change.ite(&ctx.from_i64(1), &ctx.from_i64(0))
+    }
 
+    package_variables.windows(2).map(|w| match w {
+        [prev_state, next_state] =>
+            only_one_change(&ctx, &prev_state, &next_state),
+        _ => panic!("matching window of wrong size")
+    }).conjunction()
 }

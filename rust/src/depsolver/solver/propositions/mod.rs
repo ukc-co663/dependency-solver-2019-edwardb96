@@ -28,7 +28,7 @@ pub fn make_propositions_for_problem<'ctx>(ctx: &'ctx z3::Context,
     eprintln!("making package variables");
     let package_variables = make_package_variables(ctx, packages.len(), step_limit);
     eprintln!("making one change at a time constraint");
-    let one_at_a_time = make_one_change_at_a_time_invariant(&package_variables);
+    let one_at_a_time = make_one_change_at_a_time_invariant(ctx, &package_variables);
 
 
     eprintln!("making validity constraint");
