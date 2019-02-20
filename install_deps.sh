@@ -1,3 +1,4 @@
 #!/bin/bash
-apt-get install z3 z3-libs
-pip install --user z3-solver
+apt-get update
+apt-get install -y libz3-4 cargo #python3-pip
+#pip3 install --user z3-solver

@@ -31,10 +31,7 @@ pub fn solve(repo: Vec<Package>,
     //println!("{:#?}", &shrunk_repo);
     //println!("{:#?}", &shrunk_initial_state);
     //println!("{:#?}", &shrunk_final);
-    let mut step_limit = shrunk_repo.len() * 2;
-    if step_limit > 100 {
-        step_limit = 100;
-    }
+    let step_limit = std::cmp::max(shrunk_repo.len() * 2, 100);
     let cfg = Config::new();
     let ctx = Context::new(&cfg);
     let opt = Optimize::new(&ctx);
