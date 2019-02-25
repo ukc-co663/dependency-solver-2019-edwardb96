@@ -34,7 +34,7 @@ pub fn solve(repo: Vec<Package>,
     let ctx = Context::new(&cfg);
     let opt = Optimize::new(&ctx);
 
-    opt.set_timeout(((4 * 60) + 30) * 1000);
+    opt.set_timeout(((4 * 60) + 50) * 1000);
 
     eprintln!("[{}] begin making constraints", Local::now().format("%H:%M:%S"));
     let (package_variables, all_constraints) = make_propositions_for_problem(
@@ -50,7 +50,6 @@ pub fn solve(repo: Vec<Package>,
         eprintln!("[{}] end making constraints", Local::now().format("%H:%M:%S"));
         eprintln!("[{}] running smt solver", Local::now().format("%H:%M:%S"));
         opt.minimize(&cost_variable);
-        //println!("{}", opt);
         match opt.check_get_model() {
             CheckResult::Satisfiable(model) => {
                 eprintln!("[{}] constructing solution from optimal satisfying assignment",
