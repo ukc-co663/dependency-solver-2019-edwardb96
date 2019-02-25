@@ -30,7 +30,7 @@ pub fn solve(repo: Vec<Package>,
         let size_reduction_percent = ((size_before - size_after) as f64 / size_before as f64) * 100f64;
 
         eprintln!("shrunk problem from {} to {} ({:.2}%)", size_before, size_after, size_reduction_percent);
-        let step_limit = std::cmp::min(shrunk_repo.len() * 2, 200);
+        let step_limit = std::cmp::max(std::cmp::min(shrunk_repo.len() * 2, 200), 3);
         let cfg = Config::new();
         let ctx = Context::new(&cfg);
         let opt = Optimize::new(&ctx);
