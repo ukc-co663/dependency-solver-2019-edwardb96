@@ -9,12 +9,11 @@ pub fn make_cost_constraint<'ctx>(ctx : &'ctx Context,
                                   packages: &Vec<Package>) -> (Ast<'ctx>, Ast<'ctx>) {
 
     fn state_transition_cost<'ctx>(ctx: &'ctx Context,
-                                   packages: &Vec<Package>,
+                                   sizes: &Vec<u32>,
                                    prev_state: &Vec<Ast<'ctx>>,
                                    next_state: &Vec<Ast<'ctx>>) -> Option<Ast<'ctx>> {
-        let sizes = packages.iter().map(|p| p.size);
         izip!(prev_state, next_state, sizes).map(|(prev, next, size)| {
-            transition_cost(ctx, prev, next, size)
+            transition_cost(ctx, prev, next, *size)
         }).total()
     }
 
@@ -28,9 +27,10 @@ pub fn make_cost_constraint<'ctx>(ctx : &'ctx Context,
             &is_install.ite(&ctx.from_i64(size as i64), &ctx.from_i64(0)))
     }
 
+    let sizes = packages.iter().map(|p| p.size).collect();
     let cost_value = package_variables.windows(2).filter_map(|w| match w {
         [prev_state, next_state] =>
-            state_transition_cost(ctx, packages, &prev_state, &next_state),
+            state_transition_cost(ctx, &sizes, &prev_state, &next_state),
         _ => panic!("matching window of wrong size")
     }).total().expect("Too few steps to define cost, step_limit must be > 2");
 
