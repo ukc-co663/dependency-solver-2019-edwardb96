@@ -14,6 +14,13 @@ use self::propositions::cost::make_cost_constraint;
 use self::postprocessing::extract_commands::extract_commands;
 use chrono::prelude::*;
 
+fn has_trivially_impossible_constraints(expanded_final_state: &Vec<Command>) -> bool {
+    expanded_final_state.iter().any(|constraint| match constraint {
+        Command::Install(constraint) => constraint.possibilities().is_empty(),
+        _ => false
+    })
+}
+
 pub fn solve(repo: Vec<Package>,
              initial_state: Vec<PackageKey>,
              final_state: Vec<Command>) -> Option<Vec<Command>> {
@@ -21,6 +28,12 @@ pub fn solve(repo: Vec<Package>,
         eprintln!("[{}] preprocessing", Local::now().format("%H:%M:%S"));
         let (expanded_repo, expanded_initial, expanded_final) =
             expand_constraints_in_problem(repo, initial_state, final_state);
+
+        if has_trivially_impossible_constraints(&expanded_final) {
+            return None
+        }
+
+        eprintln!("{:?}", expanded_final);
         let size_before = expanded_repo.len();
         eprintln!("shrinking problem");
         let (shrunk_repo, shrunk_initial_state, shrunk_final) =
@@ -50,6 +63,7 @@ pub fn solve(repo: Vec<Package>,
             opt.assert(&cost_constraint);
             eprintln!("[{}] end making constraints", Local::now().format("%H:%M:%S"));
             eprintln!("[{}] running smt solver", Local::now().format("%H:%M:%S"));
+            println!("{}", opt);
             opt.minimize(&cost_variable);
             match opt.check_get_model() {
                 CheckResult::Satisfiable(model) => {

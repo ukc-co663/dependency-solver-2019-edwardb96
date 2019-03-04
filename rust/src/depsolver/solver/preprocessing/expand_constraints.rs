@@ -4,11 +4,6 @@ use crate::depsolver::model::package::{Package, PackageKey};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::iter::FromIterator;
-//fn expand_constraints_in_problem(repo_package_list : Vec<Package>,
-//                                 initial_state : Vec<PackageKey>,
-//                                 final_state : Vec<PackageConstraint>)
-//    ->  (Vec<Package>, Vec<PackageKey>, Vec<PackageConstraint>) {
-//}
 
 type NamePackageIndex<'a> = HashMap<String, Vec<&'a Package>>;
 
