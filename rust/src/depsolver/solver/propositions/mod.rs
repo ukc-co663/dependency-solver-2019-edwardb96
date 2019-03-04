@@ -31,7 +31,7 @@ pub fn make_propositions_for_problem<'ctx>(ctx: &'ctx z3::Context,
 
 
     eprintln!("making validity constraint");
-    let validity_constraint = make_validity_constraint(&packages, &package_variables);
+    let validity_constraint = make_validity_constraint(ctx, &packages, &package_variables);
 
     eprintln!("making initial constraint");
     let initial_constraint = make_initial_state_constraint(&initial_state,
