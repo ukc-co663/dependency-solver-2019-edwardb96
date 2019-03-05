@@ -33,11 +33,10 @@ pub fn solve(repo: Vec<Package>,
             return None
         }
 
-        eprintln!("{:?}", expanded_final);
         let size_before = expanded_repo.len();
         eprintln!("shrinking problem");
-        let (shrunk_repo, shrunk_initial_state, shrunk_final) =
-            shrink_problem(expanded_repo, expanded_initial, expanded_final);
+        let (shrunk_repo, shrunk_initial_state, shrunk_final) = (expanded_repo, expanded_initial, expanded_final);
+            //shrink_problem(expanded_repo, expanded_initial, expanded_final);
         let size_after = shrunk_repo.len();
 
         let size_reduction_percent = ((size_before - size_after) as f64 / size_before as f64) * 100f64;
