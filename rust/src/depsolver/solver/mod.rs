@@ -63,7 +63,6 @@ pub fn solve(repo: Vec<Package>,
             opt.assert(&cost_constraint);
             eprintln!("[{}] end making constraints", Local::now().format("%H:%M:%S"));
             eprintln!("[{}] running smt solver", Local::now().format("%H:%M:%S"));
-            println!("{}", opt);
             opt.minimize(&cost_variable);
             match opt.check_get_model() {
                 CheckResult::Satisfiable(model) => {
