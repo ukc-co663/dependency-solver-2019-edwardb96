@@ -21,13 +21,10 @@ impl FromStr for Version {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let version_parts = s.split('.')
+                              .filter(|c| *c != "")
                               .map(|ns| ns.parse().expect(&format!("version containted non number '{}'", ns)))
                               .collect::<Vec<i32>>();
-        if !version_parts.is_empty() {
-            Ok(Version(version_parts))
-        } else {
-            Err("Version cannot be empty".to_owned())
-        }
+        Ok(Version(version_parts))
     }
 }
 
