@@ -29,9 +29,9 @@ pub fn solve(repo: Vec<Package>,
         let (expanded_repo, expanded_initial, expanded_final) =
             expand_constraints_in_problem(repo, initial_state, final_state);
 
-    //    if has_trivially_impossible_constraints(&expanded_final) {
-    //        return None
-    //    }
+        if has_trivially_impossible_constraints(&expanded_final) {
+            return None
+        }
 
         let size_before = expanded_repo.len();
         eprintln!("shrinking problem");
