@@ -1,2 +1,12 @@
-[workspace]
-members = ["rust"]
+[package]
+name = "depsolver"
+version = "0.1.0"
+authors = ["ejb56"]
+
+[dependencies]
+chrono = "0.4.6"
+serde = "1.0.87"
+serde_derive = "1.0.87"
+serde_json = "1.0.38"
+itertools = "0.8"
+z3 = { git = "https://github.com/edwardb96/z3.rs" }

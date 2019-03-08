@@ -1,3 +1,2 @@
 #!/bin/bash
-#cd rust
-#cargo build --release
+cargo build --release
