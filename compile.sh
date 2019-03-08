@@ -1,3 +1,3 @@
 #!/bin/bash
-cd rust
-cargo build --release
+#cd rust
+#cargo build --release
