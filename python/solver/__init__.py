@@ -39,7 +39,7 @@ def solve(repository_package_list, initial_state, final_state):
             print("running sat solver...", file=stderr)
             result = opt.check()
             if result == sat:
-                print("postprocessing...")
+                print("postprocessing...", file=stderr)
                 solution = opt.model()
                 return postprocess(solution,
                                    package_variables,
