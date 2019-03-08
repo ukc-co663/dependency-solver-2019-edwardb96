@@ -15,7 +15,8 @@ def make_propositions_for_problem(opt, package_list, initial_state,
     print("making package variables", file=stderr)
     package_variables = make_package_variables(package_list, step_limit)
     print("making cost constraint", file=stderr)
-    make_cost_constraint(opt, package_variables, package_list)
+    cost_constraint, cost_variable = \
+        make_cost_constraint(package_variables, package_list)
     print("making one change constraint", file=stderr)
     one_change_constraint = \
         make_one_change_at_a_time_invariant(package_variables)
@@ -40,6 +41,7 @@ def make_propositions_for_problem(opt, package_list, initial_state,
         one_change_constraint,
         validity_constraint,
         initial_state_constraint,
-        final_state_constraint
+        final_state_constraint,
+        cost_constraint
     ]
-    return (conjunction(constraints), package_variables)
+    return (conjunction(constraints), package_variables, cost_variable)

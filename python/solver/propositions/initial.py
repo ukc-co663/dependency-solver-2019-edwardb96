@@ -8,7 +8,6 @@ from z3 import Not
 def make_initial_state_constraint(package_list,
                                   initial_state,
                                   package_variables):
-    print(initial_state)
     def is_installed(id):
         return id in initial_state
 

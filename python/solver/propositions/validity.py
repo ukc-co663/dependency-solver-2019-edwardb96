@@ -51,8 +51,8 @@ def dependency_constraint(package_variable,
     def alternative_constraint(alternative):
         matches = list(map(lambda pid: package_variables[pid], alternative))
         return disjunction(matches) \
-            if matches else True
+            if matches else False
 
     any_of_alternatives = list(map(alternative_constraint, dependency))
     return Implies(package_variable, disjunction(any_of_alternatives)) \
-        if any_of_alternatives else True
+        if any_of_alternatives else Implies(package_variable, False)
